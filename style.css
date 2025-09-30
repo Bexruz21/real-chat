@@ -295,3 +295,148 @@ body {
     background: var(--tg-theme-section-bg-color, #e0e0e0);
     border-radius: 2px;
 }
+
+/* Замените старые стили для поля ввода */
+.chat-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message-input-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-radius: 20px;
+    padding: 12px 16px;
+    transition: all 0.2s;
+}
+
+.message-input-container:focus-within {
+    background: var(--tg-theme-section-bg-color, #e5e5e5);
+}
+
+.message-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--tg-theme-text-color, #000000);
+    line-height: 1.4;
+    max-height: 120px;
+    outline: none;
+    padding: 0;
+}
+
+.message-input::placeholder {
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+/* Кнопка отправки */
+.send-btn {
+    background: var(--tg-theme-button-color, #007aff);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.send-btn.active {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.send-btn:not(:disabled):hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.send-btn:disabled {
+    background: var(--tg-theme-hint-color, #8e8e93);
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.send-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Анимация при отправке */
+.send-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-height: 600px) {
+    .message-input-container {
+        padding: 10px 14px;
+    }
+    
+    .send-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .send-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Улучшенные кнопки */
+.btn {
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    width: 100%;
+}
+
+.btn-primary:active {
+    background: var(--tg-theme-button-color, #0056cc);
+    transform: scale(0.98);
+}
+
+.btn-secondary {
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    color: var(--tg-theme-text-color, #000000);
+    width: 100%;
+}
+
+.btn-secondary:active {
+    background: var(--tg-theme-section-bg-color, #e0e0e0);
+    transform: scale(0.98);
+}
+
+.btn-next {
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    color: var(--tg-theme-text-color, #000000);
+    width: 100%;
+}
+
+.btn-next:active {
+    background: var(--tg-theme-section-bg-color, #e0e0e0);
+    transform: scale(0.98);
+}
