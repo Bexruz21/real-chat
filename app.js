@@ -342,7 +342,19 @@ const app = createApp({
                 hour: '2-digit',
                 minute: '2-digit'
             });
-        }
+        },
+        formatMessageText(text) {
+            // Экранируем HTML символы для безопасности
+            const escapedText = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+            // Заменяем переносы строк на <br>
+            return escapedText.replace(/\n/g, '<br>');
+        },
     },
 
     beforeUnmount() {
@@ -381,13 +393,13 @@ const app = createApp({
                 
                 <div v-else class="messages">
                     <div v-for="message in messages" :key="message.id" 
-                         class="message" 
-                         :class="{
-                             'own': message.isOwn,
-                             'system': message.isSystem
-                         }">
+                        class="message" 
+                        :class="{
+                            'own': message.isOwn,
+                            'system': message.isSystem
+                        }">
                         <div v-if="!message.isSystem" class="message-bubble">
-                            <div class="message-text">{{ message.text }}</div>
+                            <div class="message-text" v-html="formatMessageText(message.text)"></div>
                             <div class="message-time">{{ formatTime(message.timestamp) }}</div>
                         </div>
                         <div v-else class="system-message">
