@@ -15,7 +15,7 @@ const app = createApp({
             searchInterval: null,
             
             // Настройки WebSocket
-            wsUrl: 'wss://316f49879268.ngrok-free.app/chat',
+            wsUrl: 'wss://316f49879268.ngrok-free.app',
         };
     },
     
