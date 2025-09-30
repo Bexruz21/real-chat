@@ -20,7 +20,7 @@ const app = createApp({
             searchInterval: null,
 
             // WebSocket
-            wsUrl: 'wss://51deb848fee9.ngrok-free.app',
+            wsUrl: 'wss://cb86adb831e4.ngrok-free.app',
         };
     },
 
@@ -54,10 +54,11 @@ const app = createApp({
     },
 
     methods: {
-        // Инициализация Telegram Web App
-        // В методе initTelegramWebApp добавьте:
+        // В initTelegramWebApp добавьте больше отладки:
         initTelegramWebApp() {
             this.telegram = window.Telegram?.WebApp;
+
+            console.log('🔧 Инициализация Telegram Web App...');
 
             if (this.telegram) {
                 this.telegram.ready();
@@ -65,8 +66,10 @@ const app = createApp({
 
                 // Пробуем получить данные из Telegram Web App
                 const user = this.telegram.initDataUnsafe?.user;
+                console.log('📋 Данные пользователя из Telegram:', user);
+
                 if (user && user.id) {
-                    this.userTelegramId = user.id;
+                    this.userTelegramId = user.id.toString(); // Преобразуем в строку
                     console.log('✅ Telegram User ID из WebApp:', this.userTelegramId);
                     this.addSystemMessage(`Добро пожаловать! Ваш ID: ${this.userTelegramId}`);
                 } else {
@@ -88,6 +91,8 @@ const app = createApp({
                 console.log('🔧 User ID:', this.userTelegramId);
                 this.addSystemMessage(this.userTelegramId.startsWith('dev_') ? 'Режим разработки' : 'Добро пожаловать!');
             }
+
+            console.log('🎯 Финальный User ID:', this.userTelegramId);
         },
 
         // Добавьте метод для получения ID из URL
@@ -105,6 +110,13 @@ const app = createApp({
                 this.connection.onopen = () => {
                     console.log('✅ WebSocket соединение установлено');
                     this.addSystemMessage('Подключено к серверу');
+
+                    // ОТПРАВЛЯЕМ ЗАПРОС НА ПОИСК ПОСЛЕ ПОДКЛЮЧЕНИЯ
+                    console.log('🔍 Отправка запроса на поиск, TG ID:', this.userTelegramId);
+                    this.sendWebSocketMessage({
+                        type: 'find_partner',
+                        telegramId: this.userTelegramId  // Убедитесь что этот параметр передается
+                    });
                 };
 
                 this.connection.onmessage = (event) => {
@@ -174,8 +186,11 @@ const app = createApp({
 
         // Отправка сообщения WebSocket
         sendWebSocketMessage(message) {
+            console.log('📤 Отправка сообщения:', message);
             if (this.connection && this.connection.readyState === WebSocket.OPEN) {
                 this.connection.send(JSON.stringify(message));
+            } else {
+                console.log('❌ WebSocket не подключен, сообщение не отправлено:', message);
             }
         },
 
@@ -199,16 +214,7 @@ const app = createApp({
                 this.searchTime++;
             }, 1000);
 
-            // Отправка запроса на поиск собеседника
-            setTimeout(() => {
-                if (this.connection && this.connection.readyState === WebSocket.OPEN) {
-                    console.log('🔍 Отправка запроса на поиск, TG ID:', this.userTelegramId);
-                    this.sendWebSocketMessage({
-                        type: 'find_partner',
-                        telegramId: this.userTelegramId
-                    });
-                }
-            }, 1000);
+            // Отправка запроса на поиск собеседника - ЖДЕМ подключения WebSocket
         },
 
         // Остановить поиск
