@@ -1,0 +1,297 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.chat-app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--tg-theme-bg-color, #ffffff);
+}
+
+/* Заголовок */
+.header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-bottom: 1px solid var(--tg-theme-section-bg-color, #e0e0e0);
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-indicator.disconnected {
+    background: #ff3b30;
+}
+
+.status-indicator.searching {
+    background: #ff9500;
+}
+
+.status-indicator.connected {
+    background: #34c759;
+}
+
+.status-text {
+    font-weight: 500;
+    font-size: 16px;
+    flex: 1;
+}
+
+.search-timer {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+/* Область сообщений */
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #ffffff);
+}
+
+.empty-state, .searching-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-text, .searching-text {
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Анимация поиска */
+.searching-animation {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tg-theme-hint-color, #8e8e93);
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.dot:nth-child(1) { animation-delay: -0.32s; }
+.dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Сообщения */
+.messages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.message {
+    display: flex;
+}
+
+.message.own {
+    justify-content: flex-end;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.message:not(.own) .message-bubble {
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-bottom-left-radius: 4px;
+}
+
+.message.own .message-bubble {
+    background: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    border-bottom-right-radius: 4px;
+}
+
+.message-text {
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.message-time {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+    text-align: right;
+}
+
+.system-message {
+    text-align: center;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 14px;
+    font-style: italic;
+    margin: 8px 0;
+    padding: 0 16px;
+}
+
+/* Панель управления */
+.control-panel {
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border-top: 1px solid var(--tg-theme-section-bg-color, #e0e0e0);
+    flex-shrink: 0;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    width: 100%;
+}
+
+.btn-secondary {
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    color: var(--tg-theme-text-color, #000000);
+    width: 100%;
+}
+
+.btn-next {
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    color: var(--tg-theme-text-color, #000000);
+    width: 100%;
+    margin-top: 12px;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Поле ввода сообщения */
+.chat-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message-input-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-radius: 20px;
+    padding: 8px 12px;
+}
+
+.message-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--tg-theme-text-color, #000000);
+    max-height: 120px;
+    outline: none;
+}
+
+.message-input::placeholder {
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+.send-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.send-btn:not(:disabled):hover {
+    opacity: 1;
+}
+
+.send-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Адаптивность для Telegram Web App */
+@media (max-height: 600px) {
+    .messages-container {
+        padding: 12px;
+    }
+    
+    .control-panel {
+        padding: 12px;
+    }
+    
+    .message-bubble {
+        padding: 10px 14px;
+    }
+}
+
+/* Кастомный скроллбар */
+.messages-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: var(--tg-theme-section-bg-color, #e0e0e0);
+    border-radius: 2px;
+}
