@@ -10,20 +10,20 @@ const app = createApp({
             partnerId: null,
             roomId: null,
             connection: null,
-            
+
             // Telegram Web App данные
             telegram: null,
             userTelegramId: null,
-            
+
             // Статистика
             searchTime: 0,
             searchInterval: null,
-            
+
             // WebSocket
             wsUrl: 'wss://51deb848fee9.ngrok-free.app',
         };
     },
-    
+
     computed: {
         statusText() {
             const statusMap = {
@@ -33,91 +33,105 @@ const app = createApp({
             };
             return statusMap[this.status];
         },
-        
+
         isSearching() {
             return this.status === 'searching';
         },
-        
+
         isConnected() {
             return this.status === 'connected';
         },
-        
+
         formattedSearchTime() {
             const minutes = Math.floor(this.searchTime / 60);
             const seconds = this.searchTime % 60;
             return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
     },
-    
+
     mounted() {
         this.initTelegramWebApp();
     },
-    
+
     methods: {
         // Инициализация Telegram Web App
+        // В методе initTelegramWebApp добавьте:
         initTelegramWebApp() {
             this.telegram = window.Telegram?.WebApp;
-            
+
             if (this.telegram) {
                 this.telegram.ready();
                 this.telegram.expand();
-                
-                // Получаем данные пользователя
+
+                // Пробуем получить данные из Telegram Web App
                 const user = this.telegram.initDataUnsafe?.user;
                 if (user && user.id) {
                     this.userTelegramId = user.id;
-                    console.log('✅ Telegram User ID:', this.userTelegramId);
+                    console.log('✅ Telegram User ID из WebApp:', this.userTelegramId);
                     this.addSystemMessage(`Добро пожаловать! Ваш ID: ${this.userTelegramId}`);
                 } else {
-                    // Если нет доступа к данным Telegram, используем случайный ID (для тестирования)
-                    this.userTelegramId = 'test_' + Math.random().toString(36).substr(2, 9);
-                    console.log('⚠️ Тестовый User ID:', this.userTelegramId);
-                    this.addSystemMessage('Режим тестирования (без Telegram)');
+                    // Если нет данных из WebApp, пробуем получить из URL параметров
+                    this.userTelegramId = this.getUserIdFromUrl();
+                    if (this.userTelegramId) {
+                        console.log('✅ Telegram User ID из URL:', this.userTelegramId);
+                        this.addSystemMessage(`Добро пожаловать! Ваш ID: ${this.userTelegramId}`);
+                    } else {
+                        // Режим тестирования
+                        this.userTelegramId = 'test_' + Math.random().toString(36).substr(2, 9);
+                        console.log('⚠️ Тестовый User ID:', this.userTelegramId);
+                        this.addSystemMessage('Режим тестирования (без Telegram)');
+                    }
                 }
             } else {
-                // Режим разработки без Telegram
-                this.userTelegramId = 'dev_' + Math.random().toString(36).substr(2, 9);
-                console.log('🔧 Режим разработки, User ID:', this.userTelegramId);
-                this.addSystemMessage('Режим разработки');
+                // Режим без Telegram Web App
+                this.userTelegramId = this.getUserIdFromUrl() || 'dev_' + Math.random().toString(36).substr(2, 9);
+                console.log('🔧 User ID:', this.userTelegramId);
+                this.addSystemMessage(this.userTelegramId.startsWith('dev_') ? 'Режим разработки' : 'Добро пожаловать!');
             }
         },
-        
+
+        // Добавьте метод для получения ID из URL
+        getUserIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('tg_user_id');
+        },
+
         // Инициализация WebSocket
         initWebSocket() {
             try {
                 console.log('🔄 Подключение к WebSocket...');
                 this.connection = new WebSocket(this.wsUrl);
-                
+
                 this.connection.onopen = () => {
                     console.log('✅ WebSocket соединение установлено');
                     this.addSystemMessage('Подключено к серверу');
                 };
-                
+
                 this.connection.onmessage = (event) => {
                     console.log('📩 Получено сообщение:', event.data);
                     const data = JSON.parse(event.data);
                     this.handleWebSocketMessage(data);
                 };
-                
+
                 this.connection.onclose = () => {
                     console.log('🔒 WebSocket соединение закрыто');
                     if (this.status !== 'disconnected') {
                         this.disconnect();
                     }
                 };
-                
+
                 this.connection.onerror = (error) => {
                     console.error('❌ WebSocket ошибка:', error);
                     this.addSystemMessage('Ошибка подключения');
                     this.disconnect();
                 };
-                
+
             } catch (error) {
                 console.error('❌ Ошибка инициализации WebSocket:', error);
                 this.addSystemMessage('Ошибка подключения к серверу');
             }
         },
-        
+
         // Обработка сообщений WebSocket
         handleWebSocketMessage(data) {
             switch (data.type) {
@@ -128,12 +142,12 @@ const app = createApp({
                     this.stopSearchTimer();
                     this.addSystemMessage(`Собеседник найден! ID: ${data.partnerId}`);
                     break;
-                    
+
                 case 'partner_disconnected':
                     this.addSystemMessage('Собеседник покинул чат');
                     this.startSearch();
                     break;
-                    
+
                 case 'message':
                     this.addMessage({
                         id: Date.now(),
@@ -142,49 +156,49 @@ const app = createApp({
                         timestamp: new Date()
                     });
                     break;
-                    
+
                 case 'searching':
                     this.addSystemMessage(data.message);
                     break;
-                    
+
                 case 'search_timeout':
                     this.addSystemMessage(data.message);
                     this.disconnect();
                     break;
-                    
+
                 case 'error':
                     this.addSystemMessage(data.message);
                     break;
             }
         },
-        
+
         // Отправка сообщения WebSocket
         sendWebSocketMessage(message) {
             if (this.connection && this.connection.readyState === WebSocket.OPEN) {
                 this.connection.send(JSON.stringify(message));
             }
         },
-        
+
         // Начать поиск собеседника
         startSearch() {
             if (!this.userTelegramId) {
                 this.addSystemMessage('Ошибка: не получен Telegram ID');
                 return;
             }
-            
+
             this.status = 'searching';
             this.messages = [];
             this.partnerId = null;
             this.roomId = null;
             this.searchTime = 0;
-            
+
             this.initWebSocket();
-            
+
             // Запуск таймера поиска
             this.searchInterval = setInterval(() => {
                 this.searchTime++;
             }, 1000);
-            
+
             // Отправка запроса на поиск собеседника
             setTimeout(() => {
                 if (this.connection && this.connection.readyState === WebSocket.OPEN) {
@@ -196,7 +210,7 @@ const app = createApp({
                 }
             }, 1000);
         },
-        
+
         // Остановить поиск
         stopSearch() {
             if (this.userTelegramId) {
@@ -206,12 +220,12 @@ const app = createApp({
             }
             this.status = 'disconnected';
             this.stopSearchTimer();
-            
+
             if (this.connection) {
                 this.connection.close();
             }
         },
-        
+
         // Отключиться
         disconnect() {
             if (this.userTelegramId) {
@@ -223,13 +237,13 @@ const app = createApp({
             this.stopSearchTimer();
             this.partnerId = null;
             this.roomId = null;
-            
+
             if (this.connection) {
                 this.connection.close();
                 this.connection = null;
             }
         },
-        
+
         // Следующий собеседник
         nextPartner() {
             this.disconnect();
@@ -237,37 +251,37 @@ const app = createApp({
                 this.startSearch();
             }, 1000);
         },
-        
+
         // Отправить сообщение
         sendMessage() {
             if (!this.message.trim() || !this.isConnected) return;
-            
+
             const messageData = {
                 id: Date.now(),
                 text: this.message.trim(),
                 isOwn: true,
                 timestamp: new Date()
             };
-            
+
             this.addMessage(messageData);
-            
+
             // Отправка сообщения через WebSocket
             this.sendWebSocketMessage({
                 type: 'message',
                 message: this.message.trim(),
                 telegramId: this.userTelegramId
             });
-            
+
             this.message = '';
             this.autoResize();
         },
-        
+
         // Добавить сообщение в историю
         addMessage(message) {
             this.messages.push(message);
             this.scrollToBottom();
         },
-        
+
         // Добавить системное сообщение
         addSystemMessage(text) {
             this.messages.push({
@@ -278,7 +292,7 @@ const app = createApp({
             });
             this.scrollToBottom();
         },
-        
+
         // Прокрутка к последнему сообщению
         scrollToBottom() {
             this.$nextTick(() => {
@@ -288,7 +302,7 @@ const app = createApp({
                 }
             });
         },
-        
+
         // Остановка таймера поиска
         stopSearchTimer() {
             if (this.searchInterval) {
@@ -296,7 +310,7 @@ const app = createApp({
                 this.searchInterval = null;
             }
         },
-        
+
         // Обработка нажатия клавиш
         handleKeyDown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -304,7 +318,7 @@ const app = createApp({
                 this.sendMessage();
             }
         },
-        
+
         // Автоматическое изменение высоты textarea
         autoResize() {
             this.$nextTick(() => {
@@ -315,7 +329,7 @@ const app = createApp({
                 }
             });
         },
-        
+
         // Форматирование времени
         formatTime(timestamp) {
             return new Date(timestamp).toLocaleTimeString('ru-RU', {
@@ -324,14 +338,14 @@ const app = createApp({
             });
         }
     },
-    
+
     beforeUnmount() {
         this.stopSearchTimer();
         if (this.connection) {
             this.connection.close();
         }
     },
-    
+
     template: `
         <div class="chat-app" :class="status">
             <!-- Заголовок -->
