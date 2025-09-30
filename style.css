@@ -223,15 +223,6 @@ body {
     gap: 12px;
 }
 
-.message-input-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    border-radius: 20px;
-    padding: 8px 12px;
-}
-
 .message-input {
     flex: 1;
     border: none;
@@ -305,7 +296,7 @@ body {
 
 .message-input-container {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 12px;
     background: var(--tg-theme-secondary-bg-color, #f0f0f0);
     border-radius: 20px;
